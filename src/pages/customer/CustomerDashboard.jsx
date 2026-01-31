@@ -1,10 +1,12 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import Button from "../../components/common/Button";
 import { creditEntryService } from "../../services";
 import { formatINR } from "../../lib/format";
 
 export default function CustomerDashboard() {
+  const navigate = useNavigate();
   const user = useSelector((s) => s.auth.user);
   const [entries, setEntries] = useState([]);
 
@@ -16,7 +18,9 @@ export default function CustomerDashboard() {
     if (user?.id) load();
   }, [user?.id]);
 
-  const total = entries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const total = useMemo(() => {
+    return entries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  }, [entries]);
 
   return (
     <div className="min-h-[calc(100vh-140px)] bg-black">
@@ -34,9 +38,18 @@ export default function CustomerDashboard() {
             <p className="mt-1 text-3xl font-semibold text-white">
               {formatINR(total)}
             </p>
-            <p className="mt-2 text-xs text-white/40">
-              (Phase 1: this is sample total from mock data)
-            </p>
+          </div>
+
+          <div className="mt-6 grid gap-2 sm:grid-cols-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/customer/history")}
+            >
+              View History
+            </Button>
+            <Button onClick={() => navigate("/customer/payment")}>
+              Make Payment
+            </Button>
           </div>
         </div>
       </div>

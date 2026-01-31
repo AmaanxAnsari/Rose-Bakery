@@ -19,11 +19,41 @@ export const ROUTES = [
     public: false,
     roles: ["user"],
   },
+  {
+    path: "/customer/history",
+    element: lazy(() => import("../pages/customer/CustomerHistory.jsx")),
+    public: false,
+    roles: ["user"],
+  },
+  {
+    path: "/customer/payment",
+    element: lazy(() => import("../pages/customer/CustomerPayment.jsx")),
+    public: false,
+    roles: ["user"],
+  },
 
   // Admin
   {
     path: "/admin/dashboard",
     element: lazy(() => import("../pages/admin/AdminDashboard.jsx")),
+    public: false,
+    roles: ["admin"],
+  },
+  {
+    path: "/admin/customers",
+    element: lazy(() => import("../pages/admin/AdminCustomers.jsx")),
+    public: false,
+    roles: ["admin"],
+  },
+  {
+    path: "/admin/entries",
+    element: lazy(() => import("../pages/admin/AdminEntries.jsx")),
+    public: false,
+    roles: ["admin"],
+  },
+  {
+    path: "/admin/request-payment",
+    element: lazy(() => import("../pages/admin/AdminRequestPayment.jsx")),
     public: false,
     roles: ["admin"],
   },
