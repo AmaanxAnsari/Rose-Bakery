@@ -1,0 +1,18 @@
+[
+  {
+    "customerId": "ROSE001",
+    "name": "Amaan",
+    "phone": "919999999999",
+    "passcode": "1234",
+    "status": "active",
+    "createdAt": "2026-01-01T10:00:00.000Z"
+  },
+  {
+    "customerId": "ROSE002",
+    "name": "Rahul",
+    "phone": "918888888888",
+    "passcode": "2222",
+    "status": "active",
+    "createdAt": "2026-01-02T10:00:00.000Z"
+  }
+]
