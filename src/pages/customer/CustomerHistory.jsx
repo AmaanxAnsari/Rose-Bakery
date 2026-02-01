@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { creditEntryService } from "../../services";
 import { groupBy } from "../../lib/filters";
-import { formatINR } from "../../lib/format";
+import { formatINR, formatTime } from "../../lib/format";
 
 export default function CustomerHistory() {
   const user = useSelector((s) => s.auth.user);
@@ -64,7 +64,7 @@ export default function CustomerHistory() {
                       className="flex items-center justify-between px-5 py-3 text-sm"
                     >
                       <p className="text-white/70">
-                        Entry • {new Date(e.createdAt).toLocaleTimeString()}
+                        Entry • {formatTime(e.createdAt)}
                       </p>
                       <p className="font-semibold text-white">
                         {formatINR(e.amount)}
