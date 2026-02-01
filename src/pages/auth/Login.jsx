@@ -7,6 +7,7 @@ import { customerService } from "../../services";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginSuccess } from "../../api/authSlice";
+import { adminLogin } from "../../services/auth/adminAuth.service";
 
 export default function Login() {
   const [mode, setMode] = useState("customer"); // customer | admin
@@ -59,28 +60,55 @@ export default function Login() {
   }
 
   async function handleAdminLogin() {
-    // Phase 1: mock admin (later firebase auth)
-    setToast({ type: "", message: "" });
+  setToast({ type: "", message: "" });
 
-    if (!email || !password) {
-      setToast({ type: "error", message: "Enter admin email and password" });
-      return;
-    }
+  if (!email || !password) {
+    setToast({ type: "error", message: "Enter admin email and password" });
+    return;
+  }
 
-    if (email !== "admin@rosebakery.com" || password !== "admin123") {
-      setToast({ type: "error", message: "Invalid admin credentials (mock)" });
-      return;
-    }
+  try {
+    setLoading(true);
+    await adminLogin(email, password);
+    setLoading(false);
 
     dispatch(
       loginSuccess({
         user: { id: "admin", name: "Admin" },
         roles: ["admin"],
-      }),
+      })
     );
 
     navigate("/admin/dashboard");
+  } catch (err) {
+    setLoading(false);
+    setToast({ type: "error", message: err.message });
   }
+}
+
+  // async function handleAdminLogin() {
+  //   // Phase 1: mock admin (later firebase auth)
+  //   setToast({ type: "", message: "" });
+
+  //   if (!email || !password) {
+  //     setToast({ type: "error", message: "Enter admin email and password" });
+  //     return;
+  //   }
+
+  //   if (email !== "admin@rosebakery.com" || password !== "admin123") {
+  //     setToast({ type: "error", message: "Invalid admin credentials (mock)" });
+  //     return;
+  //   }
+
+  //   dispatch(
+  //     loginSuccess({
+  //       user: { id: "admin", name: "Admin" },
+  //       roles: ["admin"],
+  //     }),
+  //   );
+
+  //   navigate("/admin/dashboard");
+  // }
 
   return (
     <div className="min-h-[calc(100vh-140px)] bg-black">

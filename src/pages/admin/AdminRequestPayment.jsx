@@ -8,7 +8,7 @@ import { formatINR } from "../../lib/format";
 import { getMonthKey } from "../../lib/filters";
 import { makeReceiptText, downloadReceipt } from "../../lib/receipt";
 
-const UPI_ID = "rosebakery@upi"; // dummy for now
+const UPI_ID = "amaan0076@ybl"; // dummy for now
 const SHOP_NAME = "ROSE BAKERY";
 
 export default function AdminRequestPayment() {
@@ -197,7 +197,7 @@ Thank you 😊
             </div>
 
             <p className="mt-5 text-xs text-black/50">
-              UPI ID: {UPI_ID} (dummy)
+              UPI ID: {UPI_ID}
             </p>
           </div>
         </div>

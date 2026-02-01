@@ -60,13 +60,13 @@ export const ROUTES = [
 
   {
     path: "/unauthorized",
-    element: lazy(() => import("../pages/auth/Unauthorized.jsx")),
+    element: lazy(() => import("../pages/errors/Unauthorized.jsx")),
     public: true,
   },
 
   {
     path: "*",
-    element: lazy(() => import("../pages/auth/NotFound.jsx")),
+    element: lazy(() => import("../pages/errors/NotFound.jsx")),
     public: true,
   },
 ];
