@@ -11,13 +11,19 @@ import { makeReceiptText, downloadReceipt } from "../../lib/receipt";
 
 const UPI_ID = "amaan0076@ybl"; // dummy for now
 const SHOP_NAME = "ROSE BAKERY";
+function currentMonthKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  return `${y}-${m}`;
+}
 
 export default function CustomerPayment() {
   const user = useSelector((s) => s.auth.user);
   const [entries, setEntries] = useState([]);
   const [customer, setCustomer] = useState(null);
 
-  const [monthKey, setMonthKey] = useState("2026-01");
+  const [monthKey, setMonthKey] = useState(currentMonthKey());
 
   useEffect(() => {
     async function load() {
