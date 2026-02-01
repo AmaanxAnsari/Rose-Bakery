@@ -1,4 +1,4 @@
-import { formatINR } from "../../lib/format";
+import { formatINR, formatTime } from "../../lib/format";
 
 export default function EntryTable({ rows = [] }) {
   return (
@@ -20,7 +20,7 @@ export default function EntryTable({ rows = [] }) {
               <td className="p-4">{e.customerId}</td>
               <td className="p-4 font-semibold">{formatINR(e.amount)}</td>
               <td className="p-4 text-white/60 text-xs">
-                {new Date(e.createdAt).toLocaleString()}
+                {formatTime(e.createdAt)}
               </td>
             </tr>
           ))}
