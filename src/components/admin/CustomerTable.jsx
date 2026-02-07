@@ -1,5 +1,7 @@
+import { formatSmartDateTime } from "../../lib/format";
 import Button from "../common/Button";
 
+// eslint-disable-next-line no-unused-vars
 export default function CustomerTable({ rows = [], onEdit, onDelete }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10">
@@ -10,6 +12,7 @@ export default function CustomerTable({ rows = [], onEdit, onDelete }) {
             <th className="p-4">Name</th>
             <th className="p-4">Phone</th>
             <th className="p-4">Status</th>
+            <th className="p-4">Created At</th>
             <th className="p-4 text-right">Actions</th>
           </tr>
         </thead>
@@ -30,14 +33,16 @@ export default function CustomerTable({ rows = [], onEdit, onDelete }) {
                   {c.status}
                 </span>
               </td>
+              <td className="p-4">{formatSmartDateTime(c.createdAt)}</td>
+
               <td className="p-4">
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end">
                   <Button variant="ghost" onClick={() => onEdit(c)}>
                     Edit
                   </Button>
-                  <Button variant="danger" onClick={() => onDelete(c)}>
+                  {/* <Button variant="danger" onClick={() => onDelete(c)}>
                     Delete
-                  </Button>
+                  </Button> */}
                 </div>
               </td>
             </tr>

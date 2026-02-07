@@ -17,7 +17,16 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-black/70 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-2xl bg-white" />
+          {/* Logo circle */}
+          <div className="h-9 w-9 rounded-full bg-white flex items-center justify-center overflow-hidden">
+            <img
+              src="https://i.ibb.co/bjQv0s3C/rose-1.png"
+              alt="Rose Bakery"
+              className="h-10 w-10 object-contain"
+            />
+          </div>
+
+          {/* Text */}
           <div>
             <p className="text-sm font-semibold text-white">Rose Bakery</p>
             <p className="text-[11px] text-white/50 -mt-0.5">Credit Ledger</p>
