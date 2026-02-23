@@ -7,6 +7,7 @@ import { buildUpiUrl } from "../../lib/qr";
 import { formatINR } from "../../lib/format";
 import { getMonthKey } from "../../lib/filters";
 import { makeReceiptText, downloadReceipt } from "../../lib/receipt";
+import { upiService } from "../../services/firestore/upi.service";
 
 const UPI_ID = "amaan0076@ybl"; // dummy for now
 const SHOP_NAME = "ROSE BAKERY";
@@ -26,6 +27,15 @@ export default function AdminRequestPayment() {
 
   const [entries, setEntries] = useState([]);
   const [toast, setToast] = useState("");
+  const [activeUpi, setActiveUpi] = useState(null);
+
+  useEffect(() => {
+    async function loadUpi() {
+      const active = await upiService.getActive();
+      setActiveUpi(active);
+    }
+    loadUpi();
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -56,13 +66,14 @@ export default function AdminRequestPayment() {
   }, [monthEntries]);
 
   const upiUrl = useMemo(() => {
+    if (!activeUpi) return "";
     return buildUpiUrl({
-      upiId: UPI_ID,
+      upiId: activeUpi.upiId,
       name: SHOP_NAME,
       amount: total,
       note: `Credit Payment ${monthKey} - ${customerId}`,
     });
-  }, [total, monthKey, customerId]);
+  }, [total, monthKey, customerId, activeUpi]);
 
   const whatsappText = useMemo(() => {
     return `
@@ -151,7 +162,7 @@ Thank you 😊
                       customer,
                       monthKey,
                       total,
-                      upiId: UPI_ID,
+                      upiId: activeUpi?.upiId || "Not Configured",
                     });
                     downloadReceipt({
                       filename: `receipt_${customerId}_${monthKey}.txt`,
@@ -205,7 +216,7 @@ Thank you 😊
             </div>
 
             <p className="mt-5 text-xs text-black/50">
-              UPI ID: {UPI_ID}
+              UPI ID: {activeUpi?.upiId || "Not Configured"}
             </p>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { formatINR } from "../../lib/format";
 import { getMonthKey } from "../../lib/filters";
 import { buildUpiUrl } from "../../lib/qr";
 import { makeReceiptText, downloadReceipt } from "../../lib/receipt";
+import { upiService } from "../../services/firestore/upi.service";
 
 const UPI_ID = "amaan0076@ybl"; // dummy for now
 const SHOP_NAME = "ROSE BAKERY";
@@ -22,8 +23,16 @@ export default function CustomerPayment() {
   const user = useSelector((s) => s.auth.user);
   const [entries, setEntries] = useState([]);
   const [customer, setCustomer] = useState(null);
-
+  const [activeUpi, setActiveUpi] = useState(null);
   const [monthKey, setMonthKey] = useState(currentMonthKey());
+
+    useEffect(() => {
+      async function loadUpi() {
+        const active = await upiService.getActive();
+        setActiveUpi(active);
+      }
+      loadUpi();
+    }, []);
 
   useEffect(() => {
     async function load() {
@@ -44,14 +53,16 @@ export default function CustomerPayment() {
     return monthEntries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
   }, [monthEntries]);
 
-  const upiUrl = useMemo(() => {
-    return buildUpiUrl({
-      upiId: UPI_ID,
-      name: SHOP_NAME,
-      amount: total,
-      note: `Credit Payment ${monthKey} - ${user?.id}`,
-    });
-  }, [total, monthKey, user?.id]);
+
+    const upiUrl = useMemo(() => {
+      if (!activeUpi) return "";
+      return buildUpiUrl({
+        upiId: activeUpi.upiId,
+        name: SHOP_NAME,
+        amount: total,
+        note: `Credit Payment ${monthKey} - ${user?.id}`,
+      });
+    }, [total, monthKey, user?.id, activeUpi]);
 
   return (
     <div className="min-h-[calc(100vh-140px)] bg-black">
@@ -97,7 +108,7 @@ export default function CustomerPayment() {
                       customer: { ...customer, customerId: user?.id },
                       monthKey,
                       total,
-                      upiId: UPI_ID,
+                      upiId: activeUpi?.upiId || "Not Configured",
                     });
 
                     downloadReceipt({
@@ -156,7 +167,7 @@ export default function CustomerPayment() {
             </div>
 
             <p className="mt-5 text-xs text-black/50">
-              UPI ID: {UPI_ID}
+              UPI ID: {activeUpi?.upiId || "Not Configured"}
             </p>
           </div>
         </div>
