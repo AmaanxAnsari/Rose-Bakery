@@ -122,14 +122,32 @@ Thank you 😊
                 <label className="mb-2 block text-xs font-medium text-white/70">
                   Customer
                 </label>
+
                 <select
-                  className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white outline-none"
+                  className="
+      w-full
+      rounded-2xl
+      border border-white/15
+      bg-white/5
+      px-4 py-3
+      text-sm text-white
+      outline-none
+      appearance-none
+    "
                   value={customerId}
                   onChange={(e) => setCustomerId(e.target.value)}
                 >
+                  <option value="" className="bg-black text-white">
+                    Select customer
+                  </option>
+
                   {customers.map((c) => (
-                    <option key={c.customerId} value={c.customerId}>
-                      {c.customerId} - {c.name}
+                    <option
+                      key={c.customerId}
+                      value={c.customerId}
+                      className="bg-black text-white"
+                    >
+                      {c.customerId} — {c.name}
                     </option>
                   ))}
                 </select>

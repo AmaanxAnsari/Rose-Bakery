@@ -100,6 +100,7 @@ export default function EntryTable({ rows = [] }) {
     <div className="space-y-4">
       {dates.map((date) => {
         const dayEntries = grouped[date];
+        console.log("Entry",dayEntries)
 
         const dayTotal = dayEntries.reduce(
           (sum, e) => sum + Number(e.amount || 0),
@@ -132,7 +133,7 @@ export default function EntryTable({ rows = [] }) {
               <tbody>
                 {dayEntries.map((e) => (
                   <tr key={e.id} className="border-t border-white/10">
-                    <td className="p-4">{e.customerId}</td>
+                    <td className="p-4">{e.name||e.customerId}</td>
                     <td className="p-4 font-semibold">{formatINR(e.amount)}</td>
                     <td className="p-4 text-xs text-white/60">
                       {formatTime(e.createdAt)}

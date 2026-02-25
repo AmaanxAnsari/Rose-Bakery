@@ -106,6 +106,7 @@ const searchRef = useRef(null);
 
   await creditEntryService.addCreditEntry({
     customerId: selectedCustomer.customerId,
+    name:selectedCustomer.name,
     amount,
     createdBy: "shop",
   });

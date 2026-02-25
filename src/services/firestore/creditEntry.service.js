@@ -46,10 +46,11 @@ import { todayISO } from "../../lib/format";
 
 const colRef = collection(db, "credit_entries");
 
-export async function addCreditEntry({ customerId, amount, createdBy = "customer" }) {
+export async function addCreditEntry({ customerId, amount,name, createdBy = "customer" }) {
   const payload = {
     customerId: String(customerId).trim().toUpperCase(),
     amount: Number(amount),
+    name:name,
     entryDate: todayISO(),
     createdAt: serverTimestamp(),
     createdBy,
