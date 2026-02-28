@@ -11,26 +11,46 @@ export const ROUTES = [
     element: lazy(() => import("../pages/auth/Login.jsx")),
     public: true,
   },
+  {
+    path: "/customer",
+    element: lazy(() => import("../layouts/CustomerLayout.jsx")),
+    public: false,
+    roles: ["user"],
+    children: [
+      {
+        path: "dashboard",
+        element: lazy(() => import("../pages/customer/CustomerDashboard.jsx")),
+      },
+      {
+        path: "history",
+        element: lazy(() => import("../pages/customer/CustomerHistory.jsx")),
+      },
+      {
+        path: "payment",
+        element: lazy(() => import("../pages/customer/CustomerPayment.jsx")),
+      },
+    ],
+  },
 
   // Customer
-  {
-    path: "/customer/dashboard",
-    element: lazy(() => import("../pages/customer/CustomerDashboard.jsx")),
-    public: false,
-    roles: ["user"],
-  },
-  {
-    path: "/customer/history",
-    element: lazy(() => import("../pages/customer/CustomerHistory.jsx")),
-    public: false,
-    roles: ["user"],
-  },
-  {
-    path: "/customer/payment",
-    element: lazy(() => import("../pages/customer/CustomerPayment.jsx")),
-    public: false,
-    roles: ["user"],
-  },
+  // {
+  //   path: "/customer/dashboard",
+  //   element: lazy(() => import("../pages/customer/CustomerDashboard.jsx")),
+  //   public: false,
+  //   roles: ["user"],
+  // },
+  // {
+  //   path: "/customer/history",
+  //   element: lazy(() => import("../pages/customer/CustomerHistory.jsx")),
+  //   public: false,
+  //   roles: ["user"],
+  // },
+  // {
+  //   path: "/customer/payment",
+  //   element: lazy(() => import("../pages/customer/CustomerPayment.jsx")),
+  //   public: false,
+  //   roles: ["user"],
+  // },
 
   // Admin
   {
@@ -61,36 +81,6 @@ export const ROUTES = [
       },
     ],
   },
-  //   {
-  //     path: "/admin/dashboard",
-  //     element: lazy(() => import("../pages/admin/AdminDashboard.jsx")),
-  //     public: false,
-  //     roles: ["admin"],
-  //   },
-  //   {
-  //     path: "/admin/customers",
-  //     element: lazy(() => import("../pages/admin/AdminCustomers.jsx")),
-  //     public: false,
-  //     roles: ["admin"],
-  //   },
-  //   {
-  //     path: "/admin/entries",
-  //     element: lazy(() => import("../pages/admin/AdminEntries.jsx")),
-  //     public: false,
-  //     roles: ["admin"],
-  //   },
-  //   {
-  //     path: "/admin/request-payment",
-  //     element: lazy(() => import("../pages/admin/AdminRequestPayment.jsx")),
-  //     public: false,
-  //     roles: ["admin"],
-  //   },
-  //   {
-  //   path: "/admin/ledger",
-  //   element: lazy(() => import("../pages/admin/AdminLedger.jsx")),
-  //   roles: ["admin"],
-  //   public: false,
-  // },
 
   {
     path: "/unauthorized",

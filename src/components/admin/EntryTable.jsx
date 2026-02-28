@@ -1,7 +1,12 @@
 import { formatINR, formatTime } from "../../lib/format";
 import Button from "../common/Button";
 
-export default function EntryTable({ rows = [], onEdit, onDelete }) {
+export default function EntryTable({
+  rows = [],
+  onEdit,
+  onDelete,
+  showActions = true, // 👈 NEW PROP
+}) {
   if (!rows.length) {
     return (
       <div className="rounded-3xl border border-white/10 p-10 text-center text-white/40">
@@ -23,7 +28,6 @@ export default function EntryTable({ rows = [], onEdit, onDelete }) {
     <div className="space-y-4">
       {dates.map((date) => {
         const dayEntries = grouped[date];
-        console.log("Entry", dayEntries);
 
         const dayTotal = dayEntries.reduce(
           (sum, e) => sum + Number(e.amount || 0),
@@ -50,7 +54,11 @@ export default function EntryTable({ rows = [], onEdit, onDelete }) {
                   <th className="p-4 w-1/3 text-left">Customer</th>
                   <th className="p-4 w-1/6 text-center">Amount</th>
                   <th className="p-4 w-1/6 text-center">Time</th>
-                  <th className="p-4 w-1/3 text-center">Action</th>
+
+                  {/* 👇 ACTION HEADER CONDITIONAL */}
+                  {showActions && (
+                    <th className="p-4 w-1/3 text-center">Action</th>
+                  )}
                 </tr>
               </thead>
 
@@ -67,17 +75,23 @@ export default function EntryTable({ rows = [], onEdit, onDelete }) {
                       {formatTime(e.createdAt)}
                     </td>
 
-                    <td className="p-4">
-                      <div className="flex justify-center gap-3">
-                        <Button onClick={() => onEdit?.(e)} variant="primary">
-                          Edit
-                        </Button>
+                    {/* 👇 ACTION CELL CONDITIONAL */}
+                    {showActions && (
+                      <td className="p-4">
+                        <div className="flex justify-center gap-3">
+                          <Button onClick={() => onEdit?.(e)} variant="primary">
+                            Edit
+                          </Button>
 
-                        <Button onClick={() => onDelete?.(e)} variant="danger">
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
+                          <Button
+                            onClick={() => onDelete?.(e)}
+                            variant="danger"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

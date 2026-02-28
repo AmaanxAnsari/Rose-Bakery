@@ -133,7 +133,7 @@ const isSettled = difference === 0;
         {["day", "month", "year"].map((r) => (
           <Button
             key={r}
-            variant={range === r ? "default" : "ghost"}
+            variant={range === r ? "primary" : "ghost"}
             onClick={() => setRange(r)}
           >
             {r === "day" && "Today"}

@@ -53,7 +53,7 @@ export async function generateMonthlyLedger(customerId,name, monthKey) {
   );
 
   // 3️⃣ calculate payable
-  const netPayable = totalCredit - runningAdvance + runningDue;
+// const netPayable = totalCredit + runningDue - runningAdvance;
 
   // 4️⃣ create ledger
   const ledgerRef = doc(
@@ -61,26 +61,28 @@ export async function generateMonthlyLedger(customerId,name, monthKey) {
     "monthly_ledgers",
     ledgerDocId(customerId, monthKey),
   );
+const adjustedNet = totalCredit + runningDue - runningAdvance;
 
-  const ledgerData = {
-    customerId,
-    name,
-    monthKey,
-    totalCredit,
-    advanceUsed: runningAdvance,
-    dueCarried: runningDue,
-    netPayable: netPayable < 0 ? 0 : netPayable,
+const ledgerData = {
+  customerId,
+  name,
+  monthKey,
+  totalCredit,
+  advanceUsed: runningAdvance,
+  dueCarried: runningDue,
 
-    paidAmount: 0,
-    paymentMode: null,
-    paymentDate: null,
+  netPayable: adjustedNet > 0 ? adjustedNet : 0,
 
-    closingAdvance: runningAdvance,
-    closingDue: netPayable,
+  paidAmount: 0,
+  paymentMode: null,
+  paymentDate: null,
 
-    status: "generated",
-    createdAt: new Date(),
-  };
+  closingAdvance: adjustedNet < 0 ? Math.abs(adjustedNet) : 0,
+  closingDue: adjustedNet > 0 ? adjustedNet : 0,
+
+  status: "generated",
+  createdAt: new Date(),
+};
 
   await setDoc(ledgerRef, ledgerData);
 
@@ -101,6 +103,51 @@ export async function listMonthlyLedgers() {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
+/* ------------------------------------------------ */
+/* 🔹 Get Single Monthly Ledger */
+/* ------------------------------------------------ */
+
+export async function getMonthlyLedger(customerId, monthKey) {
+  const ledgerRef = doc(
+    db,
+    "monthly_ledgers",
+    ledgerDocId(customerId, monthKey),
+  );
+
+  const snap = await getDoc(ledgerRef);
+
+  if (snap.exists()) {
+    return { id: snap.id, ...snap.data() };
+  }
+
+  return null;
+}
+// export async function listCustomerLedgers(customerId) {
+//   const q = query(
+//     collection(db, "monthly_ledgers"),
+//     where("customerId", "==", customerId),
+//     orderBy("createdAt", "desc"),
+//   );
+
+//   const snap = await getDocs(q);
+//   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+// }
+export async function listCustomerLedgers(customerId) {
+  const q = query(
+    collection(db, "monthly_ledgers"),
+    where("customerId", "==", customerId),
+  );
+
+  const snap = await getDocs(q);
+
+  const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+  return data.sort(
+    (a, b) =>
+      new Date(b.createdAt?.seconds * 1000) -
+      new Date(a.createdAt?.seconds * 1000),
+  );
+}
 /* ------------------------------------------------ */
 /* 🔹 Mark Payment */
 /* ------------------------------------------------ */

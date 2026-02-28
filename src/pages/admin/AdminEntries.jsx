@@ -119,6 +119,7 @@ export default function AdminEntries() {
             filters={filters}
             setFilters={setFilters}
             onReset={resetFilters}
+            showCustomerFilter={true}
           />
 
           {/* TOTAL */}
