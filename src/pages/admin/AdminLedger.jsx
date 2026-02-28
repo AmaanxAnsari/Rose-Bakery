@@ -42,6 +42,7 @@ function getMonthOptions() {
 export default function AdminLedger() {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  console.log(selectedCustomer)
   const [search, setSearch] = useState("");
 
   const [monthKey, setMonthKey] = useState("");
@@ -91,6 +92,7 @@ export default function AdminLedger() {
 
     const data = await generateMonthlyLedger(
       selectedCustomer.customerId,
+      selectedCustomer.name,
       monthKey,
     );
 
@@ -127,9 +129,16 @@ export default function AdminLedger() {
   }
 
   /* ----------------------------------------- */
-  /* UI */
+  /* Calculations */
   /* ----------------------------------------- */
+const numericPaid = Number(paidAmount || 0);
+const netPayable = Number(ledger?.netPayable || 0);
 
+const difference = numericPaid - netPayable;
+
+const isAdvance = difference > 0;
+const isDue = difference < 0;
+const isSettled = difference === 0;
   return (
     <div className="min-h-[calc(100vh-140px)] bg-black">
       <div className="mx-auto max-w-6xl px-4 py-10">
@@ -144,33 +153,7 @@ export default function AdminLedger() {
 
         <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950 p-6">
           {/* Customer Search */}
-          {/* <Input
-            label="Customer"
-            placeholder="Search name / ROSE001 / phone"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          {filtered.length > 0 && !selectedCustomer && (
-            <div className="mt-2 rounded-2xl border border-white/10 bg-zinc-900 max-h-52 overflow-auto">
-              {filtered.map((c) => (
-                <div
-                  key={c.customerId}
-                  onClick={() => {
-                    setSelectedCustomer(c);
-                    setSearch(`${c.name} (${c.customerId})`);
-                  }}
-                  className="px-4 py-3 border-b border-white/10 cursor-pointer hover:bg-white/10"
-                >
-                  <p className="text-white text-sm font-semibold">{c.name}</p>
-                  <p className="text-xs text-white/50">
-                    {c.customerId} • {c.phone}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )} */}
-            {/* Customer Search */}
+          <div className="relative">
             <Input
               label="Customer"
               placeholder="Search name / ROSE001 / phone"
@@ -181,11 +164,10 @@ export default function AdminLedger() {
               }}
             />
 
-            {/* Suggestions — show only when typing */}
             {search.trim().length > 0 &&
               filtered.length > 0 &&
               !selectedCustomer && (
-                <div className="absolute left-6 right-6 top-[110px] z-50 max-h-52 overflow-auto rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl">
+                <div className="absolute left-0 right-0 mt-2 z-50 max-h-52 overflow-auto rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl">
                   {filtered.map((c) => (
                     <div
                       key={c.customerId}
@@ -205,6 +187,7 @@ export default function AdminLedger() {
                   ))}
                 </div>
               )}
+          </div>
 
           {/* Month */}
           <div className="mt-4">
@@ -282,7 +265,10 @@ export default function AdminLedger() {
             {ledger.status !== "paid" ? (
               <Button
                 className="mt-6 w-full"
-                onClick={() => setOpenPayment(true)}
+                onClick={() => {
+                  setPaidAmount(ledger.netPayable); // auto fill
+                  setOpenPayment(true);
+                }}
               >
                 Mark Payment Received
               </Button>
@@ -298,8 +284,85 @@ export default function AdminLedger() {
       {/* -------------------------------- */}
       {/* Payment Modal */}
       {/* -------------------------------- */}
-
       <Modal
+        open={openPayment}
+        title="Mark Payment"
+        onClose={() => setOpenPayment(false)}
+      >
+        <div className="space-y-5">
+          {/* Customer Info */}
+          <div className="rounded-2xl bg-white/5 p-4 text-sm text-white space-y-2">
+            <div className="flex justify-between">
+              <span>Customer</span>
+              <span className="font-semibold">{selectedCustomer?.name}</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Customer ID</span>
+              <span>{selectedCustomer?.customerId}</span>
+            </div>
+
+            <div className="flex justify-between text-lg font-semibold">
+              <span>Net Payable</span>
+              <span>{formatINR(netPayable)}</span>
+            </div>
+          </div>
+
+          {/* Payment Input */}
+          <Input
+            label="Amount Paid"
+            type="number"
+            value={paidAmount}
+            onChange={(e) => setPaidAmount(e.target.value)}
+          />
+
+          {/* Live Calculation Preview */}
+          <div className="rounded-2xl bg-white/5 p-4 text-sm space-y-2">
+            {isSettled && (
+              <div className="flex justify-between text-green-400 font-semibold">
+                <span>Status</span>
+                <span>Settled ✓</span>
+              </div>
+            )}
+
+            {isAdvance && (
+              <div className="flex justify-between text-blue-400 font-semibold">
+                <span>Advance</span>
+                <span>{formatINR(difference)}</span>
+              </div>
+            )}
+
+            {isDue && (
+              <div className="flex justify-between text-red-400 font-semibold">
+                <span>Balance Due</span>
+                <span>{formatINR(Math.abs(difference))}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Payment Mode */}
+          <div>
+            <label className="text-xs text-white/60">Payment Mode</label>
+            <select
+              className="w-full mt-2 bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-white"
+              value={paymentMode}
+              onChange={(e) => setPaymentMode(e.target.value)}
+            >
+              <option value="cash">Cash</option>
+              <option value="online">Online</option>
+            </select>
+          </div>
+
+          <Button
+            className="w-full"
+            onClick={handleMarkPaid}
+            disabled={!paidAmount || loading}
+          >
+            {loading ? "Saving..." : "Save Payment"}
+          </Button>
+        </div>
+      </Modal>
+      {/* <Modal
         open={openPayment}
         title="Mark Payment"
         onClose={() => setOpenPayment(false)}
@@ -328,7 +391,7 @@ export default function AdminLedger() {
             Save Payment
           </Button>
         </div>
-      </Modal>
+      </Modal> */}
     </div>
   );
 }

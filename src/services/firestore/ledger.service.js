@@ -23,7 +23,7 @@ function ledgerDocId(customerId, monthKey) {
 /* 🔹 Generate Monthly Bill */
 /* ------------------------------------------------ */
 
-export async function generateMonthlyLedger(customerId, monthKey) {
+export async function generateMonthlyLedger(customerId,name, monthKey) {
   // 1️⃣ get customer
   const customerRef = doc(db, "customers", customerId);
   const customerSnap = await getDoc(customerRef);
@@ -64,6 +64,7 @@ export async function generateMonthlyLedger(customerId, monthKey) {
 
   const ledgerData = {
     customerId,
+    name,
     monthKey,
     totalCredit,
     advanceUsed: runningAdvance,

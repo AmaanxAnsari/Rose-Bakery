@@ -11,6 +11,8 @@ export default function CustomerTable({ rows = [], onEdit, onDelete }) {
             <th className="p-4">Customer ID</th>
             <th className="p-4">Name</th>
             <th className="p-4">Phone</th>
+            <th className="p-4">Advance</th>
+            <th className="p-4">Balance</th>
             <th className="p-4">Status</th>
             <th className="p-4">Created At</th>
             <th className="p-4 text-right">Actions</th>
@@ -22,9 +24,11 @@ export default function CustomerTable({ rows = [], onEdit, onDelete }) {
               <td className="p-4 font-semibold">{c.customerId}</td>
               <td className="p-4">{c.name}</td>
               <td className="p-4">{c.phone}</td>
+              <td className="p-4 text-center">{c.runningAdvance||0}</td>
+              <td className="p-4 text-center">{c.runningDue||0}</td>
               <td className="p-4">
                 <span
-                  className={`rounded-xl px-2 py-1 text-xs ${
+                  className={`rounded-xl px-2 py-1 text-xs capitalize ${
                     c.status === "active"
                       ? "bg-emerald-500/10 text-emerald-200 border border-emerald-500/20"
                       : "bg-white/10 text-white/60 border border-white/10"

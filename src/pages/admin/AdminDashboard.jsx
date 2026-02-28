@@ -1,65 +1,19 @@
-// // import { useNavigate } from "react-router-dom";
-// // import Button from "../../components/common/Button";
-
-// // export default function AdminDashboard() {
-// //   const navigate = useNavigate();
-
-// //   return (
-// //     <div className="min-h-[calc(100vh-140px)] bg-black">
-// //       <div className="mx-auto max-w-6xl px-4 py-10">
-// //         <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6">
-// //           <p className="text-xs font-semibold text-white/50">ADMIN</p>
-// //           <h1 className="mt-2 text-2xl font-semibold text-white">
-// //             Rose Bakery Admin
-// //           </h1>
-// //           <p className="mt-2 text-sm text-white/60">
-// //             Manage customers, entries, and payment requests.
-// //           </p>
-
-// //           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-// //             <Button
-// //               variant="ghost"
-// //               onClick={() => navigate("/admin/customers")}
-// //             >
-// //               Customers
-// //             </Button>
-// //             <Button variant="ghost" onClick={() => navigate("/admin/entries")}>
-// //               Entries
-// //             </Button>
-// //             <Button onClick={() => navigate("/admin/request-payment")}>
-// //               Request Payment
-// //             </Button>
-// //             <Button onClick={() => navigate("/admin/ledger")}>
-// //               Ledger
-// //             </Button>
-// //           </div>
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-// export default function AdminDashboard() {
-//   return (
-//     <div>
-//       <p className="text-xs text-white/50">ADMIN</p>
-//       <h1 className="text-2xl font-semibold text-white mt-1">Dashboard</h1>
-
-//       <p className="text-sm text-white/60 mt-2">
-//         Use sidebar to manage customers and ledger.
-//       </p>
-//     </div>
-//   );
-// }
 import { useEffect, useMemo, useState } from "react";
 import Button from "../../components/common/Button";
 import { creditEntryService,ledgerService } from "../../services";
 import { formatINR } from "../../lib/format";
+import Modal from './../../components/common/Modal';
+import Input from "../../components/common/Input";
 
 export default function AdminDashboard() {
   const [entries, setEntries] = useState([]);
   const [ledgerBills, setLedgerBills] = useState([]);
   console.log(ledgerBills)
   const [loading, setLoading] = useState(false);
+  const [openPayment, setOpenPayment] = useState(false);
+  const [selectedBill, setSelectedBill] = useState(null);
+  const [paidAmount, setPaidAmount] = useState("");
+  const [paymentMode, setPaymentMode] = useState("cash");
 
   const [range, setRange] = useState("month"); // day | month | year
 
@@ -123,13 +77,44 @@ export default function AdminDashboard() {
 
   /* ---------------- MARK PAID ---------------- */
 
-  async function markPaid(bill) {
-    await ledgerService.markLedgerPaid(bill.id);
-    setLedgerBills((prev) =>
-      prev.map((b) => (b.id === bill.id ? { ...b, status: "paid" } : b)),
-    );
-  }
+function openMarkPaid(bill) {
+  setSelectedBill(bill);
+  setPaidAmount(bill.netPayable); // auto fill
+  setOpenPayment(true);
+}
+async function handleMarkPaid() {
+  if (!selectedBill || !paidAmount) return;
 
+  const result = await ledgerService.markLedgerPaid({
+    customerId: selectedBill.customerId,
+    monthKey: selectedBill.monthKey,
+    paidAmount: Number(paidAmount),
+    paymentMode,
+  });
+
+  setLedgerBills((prev) =>
+    prev.map((b) =>
+      b.id === selectedBill.id
+        ? {
+            ...b,
+            status: "paid",
+            closingAdvance: result.closingAdvance,
+            closingDue: result.closingDue,
+          }
+        : b,
+    ),
+  );
+
+  setOpenPayment(false);
+  setSelectedBill(null);
+}
+const numericPaid = Number(paidAmount || 0);
+const netPayable = Number(selectedBill?.netPayable || 0);
+const difference = numericPaid - netPayable;
+
+const isAdvance = difference > 0;
+const isDue = difference < 0;
+const isSettled = difference === 0;
   return (
     <div className="space-y-6">
       {/* HEADER */}
@@ -205,14 +190,18 @@ export default function AdminDashboard() {
               {ledgerBills.map((b) => (
                 <tr key={b.id} className="border-t border-white/10">
                   <td className="p-4">
-                    {b.customerName} ({b.customerId})
+                    {b.name} ({b.customerId})
                   </td>
                   <td className="p-4">{b.monthKey}</td>
-                  <td className="p-4 font-semibold">{formatINR(b.totalCredit)}</td>
-                  <td className="p-4 font-semibold">{formatINR(b.netPayable)}</td>
+                  <td className="p-4 font-semibold">
+                    {formatINR(b.totalCredit)}
+                  </td>
+                  <td className="p-4 font-semibold">
+                    {formatINR(b.netPayable)}
+                  </td>
                   <td className="p-4">
                     <span
-                      className={`text-xs px-2 py-1 rounded-full ${
+                      className={`text-xs px-2 py-1 rounded-full capitalize ${
                         b.status === "paid"
                           ? "bg-emerald-500/20 text-emerald-400"
                           : "bg-amber-500/20 text-amber-400"
@@ -224,7 +213,7 @@ export default function AdminDashboard() {
 
                   <td className="p-4">
                     {b.status !== "paid" && (
-                      <Button size="sm" onClick={() => markPaid(b)}>
+                      <Button size="sm" onClick={() => openMarkPaid(b)}>
                         Mark Paid
                       </Button>
                     )}
@@ -247,6 +236,80 @@ export default function AdminDashboard() {
           <p className="mt-4 text-xs text-white/40">Loading data...</p>
         )}
       </div>
+      <Modal
+        open={openPayment}
+        title="Mark Payment"
+        onClose={() => setOpenPayment(false)}
+      >
+        {selectedBill && (
+          <div className="space-y-5">
+            {/* Bill Info */}
+            <div className="rounded-2xl bg-white/5 p-4 text-sm text-white space-y-2">
+              <div className="flex justify-between">
+                <span>Customer</span>
+                <span className="font-semibold">{selectedBill.name}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Month</span>
+                <span>{selectedBill.monthKey}</span>
+              </div>
+
+              <div className="flex justify-between text-lg font-semibold">
+                <span>Net Payable</span>
+                <span>{formatINR(netPayable)}</span>
+              </div>
+            </div>
+
+            <Input
+              label="Amount Paid"
+              type="number"
+              value={paidAmount}
+              onChange={(e) => setPaidAmount(e.target.value)}
+            />
+
+            {/* Live Calculation */}
+            <div className="rounded-2xl bg-white/5 p-4 text-sm space-y-2">
+              {isSettled && (
+                <div className="flex justify-between text-green-400 font-semibold">
+                  <span>Status</span>
+                  <span>Settled ✓</span>
+                </div>
+              )}
+
+              {isAdvance && (
+                <div className="flex justify-between text-blue-400 font-semibold">
+                  <span>Advance</span>
+                  <span>{formatINR(difference)}</span>
+                </div>
+              )}
+
+              {isDue && (
+                <div className="flex justify-between text-red-400 font-semibold">
+                  <span>Balance Due</span>
+                  <span>{formatINR(Math.abs(difference))}</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="text-xs text-white/60">Payment Mode</label>
+              <select
+                className="w-full mt-2 bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-white"
+                value={paymentMode}
+                onChange={(e) => setPaymentMode(e.target.value)}
+              >
+                <option value="cash">Cash</option>
+                <option value="online">Online</option>
+              </select>
+            </div>
+
+            <Button className="w-full" onClick={handleMarkPaid}>
+              Save Payment
+            </Button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

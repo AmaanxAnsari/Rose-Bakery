@@ -9,7 +9,6 @@ import { getMonthKey } from "../../lib/filters";
 import { makeReceiptText, downloadReceipt } from "../../lib/receipt";
 import { upiService } from "../../services/firestore/upi.service";
 
-const UPI_ID = "amaan0076@ybl"; // dummy for now
 const SHOP_NAME = "ROSE BAKERY";
 
 function currentMonthKey() {
@@ -75,20 +74,33 @@ export default function AdminRequestPayment() {
     });
   }, [total, monthKey, customerId, activeUpi]);
 
-  const whatsappText = useMemo(() => {
-    return `
+const whatsappText = useMemo(() => {
+  const receipt = makeReceiptText({
+    customer,
+    monthKey,
+    total,
+    upiId: activeUpi?.upiId || "Not Configured",
+  });
+
+  return `
 Hello ${customer?.name || "Customer"} 👋
 
-Rose Bakery Credit Summary
+🧾 ROSE BAKERY CREDIT SUMMARY
+
 Customer ID: ${customerId}
 Month: ${monthKey}
 Total Due: ${formatINR(total)}
 
-Please pay using the QR / UPI link.
+💳 UPI ID: ${activeUpi?.upiId || "Not Configured"}
 
-Thank you 😊
-    `.trim();
-  }, [customer, customerId, monthKey, total]);
+You can scan the QR or pay directly via UPI ID above.
+
+--- RECEIPT ---
+${receipt}
+
+Thank you for your payment 🙏
+`.trim();
+}, [customer, customerId, monthKey, total, activeUpi]);
 
   function openWhatsApp() {
     if (!customer?.phone) {

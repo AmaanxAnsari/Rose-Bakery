@@ -40,6 +40,9 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  doc,
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebase.init";
 import { todayISO } from "../../lib/format";
@@ -60,7 +63,20 @@ export async function addCreditEntry({ customerId, amount,name, createdBy = "cus
 
   return { id: ref.id, ...payload };
 }
+export async function updateCreditEntry(id, updates) {
+  const ref = doc(db, "credit_entries", id);
 
+  await updateDoc(ref, {
+    ...updates,
+  });
+
+  return true;
+}
+export async function deleteCreditEntry(id) {
+  const ref = doc(db, "credit_entries", id);
+  await deleteDoc(ref);
+  return true;
+}
 export async function listEntriesByCustomer(customerId) {
   const id = String(customerId).trim().toUpperCase();
 
