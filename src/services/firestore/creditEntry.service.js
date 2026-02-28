@@ -40,16 +40,20 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  doc,
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebase.init";
 import { todayISO } from "../../lib/format";
 
 const colRef = collection(db, "credit_entries");
 
-export async function addCreditEntry({ customerId, amount, createdBy = "customer" }) {
+export async function addCreditEntry({ customerId, amount,name, createdBy = "customer" }) {
   const payload = {
     customerId: String(customerId).trim().toUpperCase(),
     amount: Number(amount),
+    name:name,
     entryDate: todayISO(),
     createdAt: serverTimestamp(),
     createdBy,
@@ -59,7 +63,20 @@ export async function addCreditEntry({ customerId, amount, createdBy = "customer
 
   return { id: ref.id, ...payload };
 }
+export async function updateCreditEntry(id, updates) {
+  const ref = doc(db, "credit_entries", id);
 
+  await updateDoc(ref, {
+    ...updates,
+  });
+
+  return true;
+}
+export async function deleteCreditEntry(id) {
+  const ref = doc(db, "credit_entries", id);
+  await deleteDoc(ref);
+  return true;
+}
 export async function listEntriesByCustomer(customerId) {
   const id = String(customerId).trim().toUpperCase();
 

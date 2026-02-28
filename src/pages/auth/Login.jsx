@@ -291,9 +291,9 @@ export default function Login() {
       <div className="mx-auto max-w-2xl px-4 py-10">
         <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6">
           <h1 className="text-2xl font-semibold text-white">Login</h1>
-          <p className="mt-2 text-sm text-white/60">
+          {/* <p className="mt-2 text-sm text-white/60">
             Customers use ID + passcode. Admin uses email/password.
-          </p>
+          </p> */}
 
           {/* TOGGLE */}
           <div className="mt-6 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/5 p-1">
@@ -372,7 +372,7 @@ export default function Login() {
               <div className="space-y-4">
                 <Input
                   label="Admin Email"
-                  placeholder="admin@rosebakery.com"
+                  placeholder="Enter email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
