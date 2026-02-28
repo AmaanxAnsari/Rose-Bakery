@@ -294,12 +294,24 @@ const isSettled = difference === 0;
           <div className="rounded-2xl bg-white/5 p-4 text-sm text-white space-y-2">
             <div className="flex justify-between">
               <span>Customer</span>
-              <span className="font-semibold">{selectedCustomer?.name}</span>
+              <span className="font-semibold">
+                {selectedCustomer?.name} ({selectedCustomer?.customerId})
+              </span>
             </div>
 
             <div className="flex justify-between">
-              <span>Customer ID</span>
-              <span>{selectedCustomer?.customerId}</span>
+              <span>Total Credit</span>
+              <span>{formatINR(ledger?.totalCredit || 0)}</span>
+            </div>
+
+            <div className="flex justify-between text-amber-400">
+              <span>Due Carried</span>
+              <span>{formatINR(ledger?.dueCarried || 0)}</span>
+            </div>
+
+            <div className="flex justify-between text-blue-400">
+              <span>Advance Used</span>
+              <span>{formatINR(ledger?.advanceUsed || 0)}</span>
             </div>
 
             <div className="flex justify-between text-lg font-semibold">

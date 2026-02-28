@@ -180,7 +180,11 @@ const isSettled = difference === 0;
                 <th className="p-4">Customer</th>
                 <th className="p-4">Month</th>
                 <th className="p-4">Total Credit</th>
+                <th className="p-4">Due Carried</th>
+                <th className="p-4">Advance Used</th>
                 <th className="p-4">Net Payable</th>
+                <th className="p-4">Closing Due</th>
+                <th className="p-4">Closing Advance</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Action</th>
               </tr>
@@ -193,12 +197,31 @@ const isSettled = difference === 0;
                     {b.name} ({b.customerId})
                   </td>
                   <td className="p-4">{b.monthKey}</td>
+
                   <td className="p-4 font-semibold">
                     {formatINR(b.totalCredit)}
                   </td>
+
+                  <td className="p-4 text-amber-400">
+                    {formatINR(b.dueCarried || 0)}
+                  </td>
+
+                  <td className="p-4 text-blue-400">
+                    {formatINR(b.advanceUsed || 0)}
+                  </td>
+
                   <td className="p-4 font-semibold">
                     {formatINR(b.netPayable)}
                   </td>
+
+                  <td className="p-4 text-red-400">
+                    {formatINR(b.closingDue || 0)}
+                  </td>
+
+                  <td className="p-4 text-green-400">
+                    {formatINR(b.closingAdvance || 0)}
+                  </td>
+
                   <td className="p-4">
                     <span
                       className={`text-xs px-2 py-1 rounded-full capitalize ${
@@ -251,8 +274,18 @@ const isSettled = difference === 0;
               </div>
 
               <div className="flex justify-between">
-                <span>Month</span>
-                <span>{selectedBill.monthKey}</span>
+                <span>Total Credit</span>
+                <span>{formatINR(selectedBill.totalCredit)}</span>
+              </div>
+
+              <div className="flex justify-between text-amber-400">
+                <span>Due Carried</span>
+                <span>{formatINR(selectedBill.dueCarried || 0)}</span>
+              </div>
+
+              <div className="flex justify-between text-blue-400">
+                <span>Advance Used</span>
+                <span>{formatINR(selectedBill.advanceUsed || 0)}</span>
               </div>
 
               <div className="flex justify-between text-lg font-semibold">
