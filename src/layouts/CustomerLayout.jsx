@@ -41,7 +41,7 @@ export default function CustomerLayout() {
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="text-white hover:text-white/70 transition"
+            className={`text-white hover:text-white/70 transition ${collapsed ? "justify-center mx-auto" : ""}`}
           >
             {collapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
           </button>

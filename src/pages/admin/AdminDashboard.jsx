@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Button from "../../components/common/Button";
-import { creditEntryService,ledgerService } from "../../services";
+import { creditEntryService,customerService,ledgerService } from "../../services";
 import { formatINR } from "../../lib/format";
 import Modal from './../../components/common/Modal';
 import Input from "../../components/common/Input";
+import { generateMonthlyLedger } from "../../services/firestore/ledger.service";
 
 export default function AdminDashboard() {
   const [entries, setEntries] = useState([]);
@@ -63,17 +64,20 @@ export default function AdminDashboard() {
 
   /* ---------------- STATS ---------------- */
 
-  const totalCredit = useMemo(() => {
-    return filteredEntries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-  }, [filteredEntries]);
+const totalCredit = useMemo(() => {
+  return filteredEntries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+}, [filteredEntries]);
 
-  const totalPaid = useMemo(() => {
-    return ledgerBills
-      .filter((b) => b.status === "paid")
-      .reduce((sum, b) => sum + Number(b.amount || 0), 0);
-  }, [ledgerBills]);
+const totalPaid = useMemo(() => {
+  return ledgerBills
+    .filter((b) => b.status === "paid")
+    .reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
+}, [ledgerBills]);
 
-  const totalOutstanding = totalCredit - totalPaid;
+// const totalOutstanding = useMemo(() => {
+//   return ledgerBills.reduce((sum, b) => sum + Number(b.closingDue || 0), 0);
+// }, [ledgerBills]);
+const totalOutstanding = totalCredit - totalPaid;
 
   /* ---------------- MARK PAID ---------------- */
 
@@ -115,6 +119,36 @@ const difference = numericPaid - netPayable;
 const isAdvance = difference > 0;
 const isDue = difference < 0;
 const isSettled = difference === 0;
+
+
+useEffect(() => {
+  async function autoGenerateIfNeeded() {
+    const now = new Date();
+    const today = now.getDate();
+
+    if (today !== 1) return; // only on 1st
+
+    const monthKey = `${now.getFullYear()}-${String(now.getMonth()).padStart(
+      2,
+      "0",
+    )}`;
+
+    const customersList = await customerService.listCustomers();
+
+    for (const c of customersList) {
+      const existing = await ledgerService.getMonthlyLedger(
+        c.customerId,
+        monthKey,
+      );
+
+      if (!existing) {
+        await generateMonthlyLedger(c.customerId, c.name, monthKey);
+      }
+    }
+  }
+
+  autoGenerateIfNeeded();
+}, []);
   return (
     <div className="space-y-6">
       {/* HEADER */}
@@ -327,13 +361,18 @@ const isSettled = difference === 0;
 
             <div>
               <label className="text-xs text-white/60">Payment Mode</label>
+
               <select
-                className="w-full mt-2 bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-white"
+                className="w-full mt-2 bg-zinc-900 text-white border border-white/15 rounded-xl px-3 py-2 appearance-none focus:outline-none focus:ring-2 focus:ring-white/20"
                 value={paymentMode}
                 onChange={(e) => setPaymentMode(e.target.value)}
               >
-                <option value="cash">Cash</option>
-                <option value="online">Online</option>
+                <option value="cash" className="bg-zinc-900 text-white">
+                  Cash
+                </option>
+                <option value="online" className="bg-zinc-900 text-white">
+                  Online
+                </option>
               </select>
             </div>
 

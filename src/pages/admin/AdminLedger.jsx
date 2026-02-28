@@ -5,6 +5,7 @@ import Modal from "../../components/common/Modal";
 import { customerService } from "../../services";
 import {
   generateMonthlyLedger,
+  getMonthlyLedger,
   markLedgerPaid,
 } from "../../services/firestore/ledger.service";
 import { formatINR } from "../../lib/format";
@@ -99,6 +100,29 @@ export default function AdminLedger() {
     setLedger(data);
     setLoading(false);
   }
+  async function handleGenerateAllBills() {
+    if (!monthKey) return;
+
+    setLoading(true);
+
+    const customersList = await customerService.listCustomers();
+
+    for (const c of customersList) {
+      // check if ledger already exists
+      const existing = await getMonthlyLedger(
+        c.customerId,
+        monthKey,
+      );
+
+      // 🔥 skip if already generated
+      if (existing) continue;
+
+      await generateMonthlyLedger(c.customerId, c.name, monthKey);
+    }
+
+    setLoading(false);
+    alert("Bills generated successfully ✅");
+  }
 
   /* ----------------------------------------- */
   /* Mark Payment */
@@ -151,85 +175,91 @@ const isSettled = difference === 0;
         {/* Filters */}
         {/* -------------------------------- */}
 
-        <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950 p-6">
-          {/* Customer Search */}
-          <div className="relative">
-            <Input
-              label="Customer"
-              placeholder="Search name / ROSE001 / phone"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setSelectedCustomer(null);
-              }}
-            />
+        <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-6">
+          {/* Top Row → Customer + Month */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Customer Search */}
+            <div className="relative">
+              <Input
+                label="Customer"
+                placeholder="Search name / ROSE001 / phone"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setSelectedCustomer(null);
+                }}
+              />
 
-            {search.trim().length > 0 &&
-              filtered.length > 0 &&
-              !selectedCustomer && (
-                <div className="absolute left-0 right-0 mt-2 z-50 max-h-52 overflow-auto rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl">
-                  {filtered.map((c) => (
-                    <div
-                      key={c.customerId}
-                      onClick={() => {
-                        setSelectedCustomer(c);
-                        setSearch(`${c.name} (${c.customerId})`);
-                      }}
-                      className="cursor-pointer border-b border-white/5 px-4 py-3 hover:bg-white/10"
-                    >
-                      <p className="text-sm font-semibold text-white">
-                        {c.name}
-                      </p>
-                      <p className="text-xs text-white/50">
-                        {c.customerId} • {c.phone}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-          </div>
+              {search.trim().length > 0 &&
+                filtered.length > 0 &&
+                !selectedCustomer && (
+                  <div className="absolute left-0 right-0 mt-2 z-50 max-h-52 overflow-auto rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl">
+                    {filtered.map((c) => (
+                      <div
+                        key={c.customerId}
+                        onClick={() => {
+                          setSelectedCustomer(c);
+                          setSearch(`${c.name} (${c.customerId})`);
+                        }}
+                        className="cursor-pointer border-b border-white/5 px-4 py-3 hover:bg-white/10 transition"
+                      >
+                        <p className="text-sm font-semibold text-white">
+                          {c.name}
+                        </p>
+                        <p className="text-xs text-white/50">
+                          {c.customerId} • {c.phone}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
 
-          {/* Month */}
-          <div className="mt-4">
-            <label className="text-xs text-white/60">Month</label>
-
-            <select
-              className="
-      w-full mt-2
-      bg-white/5
-      border border-white/15
-      rounded-xl
-      px-3 py-2
-      text-white
-      outline-none
-      appearance-none
-    "
-              value={monthKey}
-              onChange={(e) => setMonthKey(e.target.value)}
-            >
-              <option value="" className="bg-black text-white">
-                Select month
-              </option>
-
-              {months.map((m) => (
-                <option
-                  key={m.value}
-                  value={m.value}
-                  className="bg-black text-white"
-                >
-                  {m.label}
+            {/* Month Select */}
+            <div>
+              <label className="text-xs text-white/60">Month</label>
+              <select
+                className="w-full mt-2 bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-white outline-none appearance-none focus:ring-2 focus:ring-white/20"
+                value={monthKey}
+                onChange={(e) => setMonthKey(e.target.value)}
+              >
+                <option value="" className="bg-black text-white">
+                  Select month
                 </option>
-              ))}
-            </select>
+
+                {months.map((m) => (
+                  <option
+                    key={m.value}
+                    value={m.value}
+                    className="bg-black text-white"
+                  >
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <Button
-            className="mt-5 w-full"
-            onClick={handleGenerateBill}
-            disabled={!selectedCustomer || !monthKey || loading}
-          >
-            {loading ? "Generating..." : "Generate Bill"}
-          </Button>
+          {/* Buttons Row */}
+          <div className="grid md:grid-cols-2 gap-4 pt-2">
+            {/* Primary Button */}
+            <Button
+              onClick={handleGenerateBill}
+              disabled={!selectedCustomer || !monthKey || loading}
+              className="w-full"
+            >
+              {loading ? "Generating..." : "Generate Selected Bill"}
+            </Button>
+
+            {/* Secondary Button */}
+            <Button
+              onClick={handleGenerateAllBills}
+              variant="ghost"
+              className="w-full border border-white/20 hover:bg-white/10"
+            >
+              Generate All Bills
+            </Button>
+          </div>
         </div>
 
         {/* -------------------------------- */}
