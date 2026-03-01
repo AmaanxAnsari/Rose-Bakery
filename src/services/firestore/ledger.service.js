@@ -8,6 +8,7 @@ import {
   setDoc,
   updateDoc,
   orderBy,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebase.init";
 
@@ -197,4 +198,34 @@ export async function markLedgerPaid({
   });
 
   return { closingAdvance, closingDue };
+}
+/* ------------------------------------------------ */
+/* 🔴 Delete Monthly Ledger */
+/* ------------------------------------------------ */
+
+export async function deleteMonthlyLedger(customerId, monthKey) {
+  const ledgerRef = doc(
+    db,
+    "monthly_ledgers",
+    ledgerDocId(customerId, monthKey),
+  );
+
+  const snap = await getDoc(ledgerRef);
+  if (!snap.exists()) throw new Error("Ledger not found");
+
+  const ledger = snap.data();
+
+  // ⚠️ If bill was already paid, revert customer balances
+  if (ledger.status === "paid") {
+    const customerRef = doc(db, "customers", customerId);
+
+    await updateDoc(customerRef, {
+      runningAdvance: 0,
+      runningDue: 0,
+    });
+  }
+
+  await deleteDoc(ledgerRef);
+
+  return true;
 }
