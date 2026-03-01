@@ -221,7 +221,7 @@ const isSettled = difference === 0;
           Generated Bills
         </h2>
 
-        <div className="overflow-hidden rounded-2xl border border-white/10">
+        {/* <div className="overflow-hidden rounded-2xl border border-white/10">
           <table className="w-full text-left text-sm text-white">
             <thead className="bg-white/5 text-xs text-white/60">
               <tr>
@@ -309,6 +309,102 @@ const isSettled = difference === 0;
               {ledgerBills.length === 0 && (
                 <tr>
                   <td colSpan={5} className="p-6 text-center text-white/50">
+                    No ledger bills yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div> */}
+        <div className="w-full overflow-x-auto rounded-2xl border border-white/10">
+          <table className="min-w-[1200px] w-full text-left text-sm text-white">
+            <thead className="bg-white/5 text-xs text-white/60">
+              <tr>
+                <th className="p-4 whitespace-nowrap">Customer</th>
+                <th className="p-4 whitespace-nowrap">Month</th>
+                <th className="p-4 whitespace-nowrap">Total Credit</th>
+                <th className="p-4 whitespace-nowrap">Due Carried</th>
+                <th className="p-4 whitespace-nowrap">Advance Used</th>
+                <th className="p-4 whitespace-nowrap">Net Payable</th>
+                <th className="p-4 whitespace-nowrap">Closing Due</th>
+                <th className="p-4 whitespace-nowrap">Closing Advance</th>
+                <th className="p-4 whitespace-nowrap">Status</th>
+                <th className="p-4 whitespace-nowrap">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {ledgerBills.map((b) => (
+                <tr key={b.id} className="border-t border-white/10">
+                  <td className="p-4 whitespace-nowrap">
+                    {b.name} ({b.customerId})
+                  </td>
+
+                  <td className="p-4 whitespace-nowrap">{b.monthKey}</td>
+
+                  <td className="p-4 font-semibold whitespace-nowrap">
+                    {formatINR(b.totalCredit)}
+                  </td>
+
+                  <td className="p-4 text-amber-400 whitespace-nowrap">
+                    {formatINR(b.dueCarried || 0)}
+                  </td>
+
+                  <td className="p-4 text-blue-400 whitespace-nowrap">
+                    {formatINR(b.advanceUsed || 0)}
+                  </td>
+
+                  <td className="p-4 font-semibold whitespace-nowrap">
+                    {formatINR(b.netPayable)}
+                  </td>
+
+                  <td className="p-4 text-red-400 whitespace-nowrap">
+                    {formatINR(b.closingDue || 0)}
+                  </td>
+
+                  <td className="p-4 text-green-400 whitespace-nowrap">
+                    {formatINR(b.closingAdvance || 0)}
+                  </td>
+
+                  <td className="p-4 whitespace-nowrap">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full capitalize ${
+                        b.status === "paid"
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : "bg-amber-500/20 text-amber-400"
+                      }`}
+                    >
+                      {b.status}
+                    </span>
+                  </td>
+
+                  <td className="p-2 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      {b.status !== "paid" && (
+                        <button
+                          onClick={() => openMarkPaid(b)}
+                          className="p-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition"
+                          title="Mark as Paid"
+                        >
+                          <CheckCircle size={18} />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleDeleteBill(b)}
+                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition"
+                        title="Delete Bill"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {ledgerBills.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="p-6 text-center text-white/50">
                     No ledger bills yet.
                   </td>
                 </tr>
