@@ -78,51 +78,51 @@ export default function CustomerDashboard() {
           Monthly Ledgers
         </h2>
 
-        <div className="overflow-hidden rounded-2xl border border-white/10">
-          <table className="w-full text-left text-sm text-white">
+        <div className="w-full overflow-x-auto rounded-2xl border border-white/10">
+          <table className="min-w-[900px] w-full text-left text-sm text-white">
             <thead className="bg-white/5 text-xs text-white/60">
               <tr>
-                <th className="p-4">Month</th>
-                <th className="p-4">Total Credit</th>
-                <th className="p-4">Due Carried</th>
-                <th className="p-4">Advance Used</th>
-                <th className="p-4">Net Payable</th>
-                <th className="p-4">Closing Due</th>
-                <th className="p-4">Closing Advance</th>
-                <th className="p-4">Status</th>
+                <th className="p-4 whitespace-nowrap">Month</th>
+                <th className="p-4 whitespace-nowrap">Total Credit</th>
+                <th className="p-4 whitespace-nowrap">Due Carried</th>
+                <th className="p-4 whitespace-nowrap">Advance Used</th>
+                <th className="p-4 whitespace-nowrap">Net Payable</th>
+                <th className="p-4 whitespace-nowrap">Closing Due</th>
+                <th className="p-4 whitespace-nowrap">Closing Advance</th>
+                <th className="p-4 whitespace-nowrap">Status</th>
               </tr>
             </thead>
 
             <tbody>
               {ledgerBills.map((b) => (
                 <tr key={b.id} className="border-t border-white/10">
-                  <td className="p-4">{b.monthKey}</td>
+                  <td className="p-4 whitespace-nowrap">{b.monthKey}</td>
 
-                  <td className="p-4 font-semibold">
+                  <td className="p-4 font-semibold whitespace-nowrap">
                     {formatINR(b.totalCredit)}
                   </td>
 
-                  <td className="p-4 text-amber-400">
+                  <td className="p-4 text-amber-400 whitespace-nowrap">
                     {formatINR(b.dueCarried || 0)}
                   </td>
 
-                  <td className="p-4 text-blue-400">
+                  <td className="p-4 text-blue-400 whitespace-nowrap">
                     {formatINR(b.advanceUsed || 0)}
                   </td>
 
-                  <td className="p-4 font-semibold">
+                  <td className="p-4 font-semibold whitespace-nowrap">
                     {formatINR(b.netPayable)}
                   </td>
 
-                  <td className="p-4 text-red-400">
+                  <td className="p-4 text-red-400 whitespace-nowrap">
                     {formatINR(b.closingDue || 0)}
                   </td>
 
-                  <td className="p-4 text-green-400">
+                  <td className="p-4 text-green-400 whitespace-nowrap">
                     {formatINR(b.closingAdvance || 0)}
                   </td>
 
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <span
                       className={`text-xs px-2 py-1 rounded-full capitalize ${
                         b.status === "paid"

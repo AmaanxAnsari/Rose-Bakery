@@ -46,29 +46,54 @@ export default function AdminRequestPayment() {
   }, []);
 
   /* ---------------- Load / Generate Ledger ---------------- */
+  // FULL CLEAN VERSION
+
+  // 🔥 ONLY CHANGE: remove auto-generation from useEffect
 
   useEffect(() => {
     async function loadLedger() {
       if (!customerId || !monthKey) return;
 
-      let data = await ledgerService.getMonthlyLedger(customerId, monthKey);
-
-      if (!data) {
-        const customer = customers.find((c) => c.customerId === customerId);
-        if (!customer) return;
-
-        data = await ledgerService.generateMonthlyLedger(
-          customerId,
-          customer.name,
-          monthKey,
-        );
+      const isValidMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(monthKey);
+      if (!isValidMonth) {
+        setLedger(null);
+        return;
       }
+
+      const data = await ledgerService.getMonthlyLedger(customerId, monthKey);
 
       setLedger(data);
     }
 
     loadLedger();
-  }, [customerId, monthKey, customers]);
+  }, [customerId, monthKey]);
+
+  async function handleGenerateLedger() {
+    const isValidMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(monthKey);
+    if (!isValidMonth) {
+      setToast("Invalid Month Format (YYYY-MM)");
+      return;
+    }
+
+    const existing = await ledgerService.getMonthlyLedger(customerId, monthKey);
+
+    if (existing) {
+      setToast("Ledger already exists for this month.");
+      return;
+    }
+
+    const customer = customers.find((c) => c.customerId === customerId);
+    if (!customer) return;
+
+    const newLedger = await ledgerService.generateMonthlyLedger(
+      customerId,
+      customer.name,
+      monthKey,
+    );
+
+    setLedger(newLedger);
+    setToast("Ledger generated successfully.");
+  }
 
   const customer = useMemo(
     () => customers.find((c) => c.customerId === customerId) || null,
@@ -128,26 +153,26 @@ Thank you 🙏
     activeUpi,
   ]);
 
-function openWhatsApp() {
-  if (!customer?.phone) {
-    setToast("Customer phone missing.");
-    return;
+  function openWhatsApp() {
+    if (!customer?.phone) {
+      setToast("Customer phone missing.");
+      return;
+    }
+
+    // Remove non-digits (spaces, +, -, etc.)
+    const cleanPhone = customer.phone.replace(/\D/g, "");
+
+    // Add 91 if not already present
+    const phoneWithCode = cleanPhone.startsWith("91")
+      ? cleanPhone
+      : `91${cleanPhone}`;
+
+    const url = `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(
+      whatsappText,
+    )}`;
+
+    window.open(url, "_blank");
   }
-
-  // Remove non-digits (spaces, +, -, etc.)
-  const cleanPhone = customer.phone.replace(/\D/g, "");
-
-  // Add 91 if not already present
-  const phoneWithCode = cleanPhone.startsWith("91")
-    ? cleanPhone
-    : `91${cleanPhone}`;
-
-  const url = `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(
-    whatsappText,
-  )}`;
-
-  window.open(url, "_blank");
-}
 
   return (
     <div className="min-h-[calc(100vh-140px)] bg-black">
@@ -212,6 +237,11 @@ function openWhatsApp() {
 
             {/* Buttons */}
             <div className="mt-5 flex gap-3">
+              {!ledger && (
+                <Button className="w-full mt-4" onClick={handleGenerateLedger}>
+                  Generate Ledger
+                </Button>
+              )}
               <Button
                 className="w-full"
                 onClick={openWhatsApp}
@@ -246,7 +276,6 @@ function openWhatsApp() {
 
             {/* WhatsApp Preview */}
             <div className="mt-4 rounded-3xl border border-white/10 bg-black p-3">
-
               <div className="max-h-30 overflow-y-auto rounded-xl bg-zinc-900 p-3 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                 <pre className="text-xs text-green-400 whitespace-pre-wrap wrap-break-word">
                   {whatsappText}
