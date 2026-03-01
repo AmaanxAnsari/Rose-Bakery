@@ -145,6 +145,7 @@ export default function AdminCustomers() {
     load();
   }
 
+
   return (
     <div className="min-h-[calc(100vh-140px)] bg-black">
       <div className="mx-auto max-w-6xl px-4 py-10">
@@ -185,7 +186,7 @@ export default function AdminCustomers() {
       </div>
 
       {/* 🔥 MODAL */}
-      <Modal
+      {/* <Modal
         open={openForm}
         title={editing ? "Edit Customer" : "Add Customer"}
         onClose={() => setOpenForm(false)}
@@ -242,6 +243,83 @@ export default function AdminCustomers() {
           />
 
           <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={() => setOpenForm(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button className="w-full" onClick={save} disabled={loading}>
+              {loading ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </div>
+      </Modal> */}
+      <Modal
+        open={openForm}
+        title={editing ? "Edit Customer" : "Add Customer"}
+        onClose={() => setOpenForm(false)}
+      >
+        <div className="max-h-[75vh] overflow-y-auto pr-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input label="Customer ID" value={form.customerId} disabled />
+
+            <Input
+              label="Name"
+              placeholder="Customer name"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            />
+
+            <Input
+              label="Phone"
+              placeholder="919999999999"
+              value={form.phone}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, phone: e.target.value }))
+              }
+            />
+
+            <Input
+              label="Passcode (4 digits)"
+              value={form.passcode}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  passcode: e.target.value.replace(/\D/g, "").slice(0, 4),
+                }))
+              }
+            />
+
+            <Input
+              label="Running Advance"
+              type="number"
+              value={form.runningAdvance}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  runningAdvance: e.target.value,
+                }))
+              }
+            />
+
+            <Input
+              label="Running Due"
+              type="number"
+              value={form.runningDue}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  runningDue: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          {/* Buttons full width below grid */}
+          <div className="flex gap-2 mt-6">
             <Button
               variant="ghost"
               className="w-full"

@@ -262,14 +262,19 @@ export default function Login() {
   async function handleAdminLogin() {
     setToast({ type: "", message: "" });
 
+    
     if (!email || !password) {
       setToast({ type: "error", message: "Enter admin email and password" });
       return;
     }
+      const cleanEmail = email.trim();
+
+      if (!cleanEmail) return;
+
 
     try {
       setLoading(true);
-      await adminLogin(email, password);
+      await adminLogin(cleanEmail, password);
       setLoading(false);
 
       dispatch(

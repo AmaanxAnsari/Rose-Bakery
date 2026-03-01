@@ -128,17 +128,26 @@ Thank you 🙏
     activeUpi,
   ]);
 
-  function openWhatsApp() {
-    if (!customer?.phone) {
-      setToast("Customer phone missing.");
-      return;
-    }
-
-    const url = `https://wa.me/${customer.phone}?text=${encodeURIComponent(
-      whatsappText,
-    )}`;
-    window.open(url, "_blank");
+function openWhatsApp() {
+  if (!customer?.phone) {
+    setToast("Customer phone missing.");
+    return;
   }
+
+  // Remove non-digits (spaces, +, -, etc.)
+  const cleanPhone = customer.phone.replace(/\D/g, "");
+
+  // Add 91 if not already present
+  const phoneWithCode = cleanPhone.startsWith("91")
+    ? cleanPhone
+    : `91${cleanPhone}`;
+
+  const url = `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(
+    whatsappText,
+  )}`;
+
+  window.open(url, "_blank");
+}
 
   return (
     <div className="min-h-[calc(100vh-140px)] bg-black">
