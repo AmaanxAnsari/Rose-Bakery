@@ -6,6 +6,7 @@ import { formatINR } from "../../lib/format";
 import Modal from './../../components/common/Modal';
 import Input from "../../components/common/Input";
 import { generateMonthlyLedger } from "../../services/firestore/ledger.service";
+import { CheckCircle, Trash2 } from "lucide-react";
 
 export default function AdminDashboard() {
   const [entries, setEntries] = useState([]);
@@ -112,6 +113,18 @@ async function handleMarkPaid() {
 
   setOpenPayment(false);
   setSelectedBill(null);
+}
+
+async function handleDeleteBill(bill) {
+  const confirmDelete = window.confirm(
+    `Delete bill for ${bill.name} (${bill.monthKey})?`,
+  );
+
+  if (!confirmDelete) return;
+
+  await ledgerService.deleteMonthlyLedger(bill.customerId, bill.monthKey);
+
+  setLedgerBills((prev) => prev.filter((b) => b.id !== bill.id));
 }
 const numericPaid = Number(paidAmount || 0);
 const netPayable = Number(selectedBill?.netPayable || 0);
@@ -269,12 +282,26 @@ const isSettled = difference === 0;
                     </span>
                   </td>
 
-                  <td className="p-4">
-                    {b.status !== "paid" && (
-                      <Button size="sm" onClick={() => openMarkPaid(b)}>
-                        Mark Paid
-                      </Button>
-                    )}
+                  <td className="p-2">
+                    <div className="flex items-center gap-3">
+                      {b.status !== "paid" && (
+                        <button
+                          onClick={() => openMarkPaid(b)}
+                          className="p-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition"
+                          title="Mark as Paid"
+                        >
+                          <CheckCircle size={18} />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleDeleteBill(b)}
+                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition"
+                        title="Delete Bill"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
