@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from "react";
 import Button from "../../components/common/Button";
 import { creditEntryService,customerService,ledgerService } from "../../services";
@@ -121,34 +122,34 @@ const isDue = difference < 0;
 const isSettled = difference === 0;
 
 
-useEffect(() => {
-  async function autoGenerateIfNeeded() {
-    const now = new Date();
-    const today = now.getDate();
+// useEffect(() => {
+//   async function autoGenerateIfNeeded() {
+//     const now = new Date();
+//     const today = now.getDate();
 
-    if (today !== 1) return; // only on 1st
+//     if (today !== 1) return; // only on 1st
 
-    const monthKey = `${now.getFullYear()}-${String(now.getMonth()).padStart(
-      2,
-      "0",
-    )}`;
+//     const monthKey = `${now.getFullYear()}-${String(now.getMonth()).padStart(
+//       2,
+//       "0",
+//     )}`;
 
-    const customersList = await customerService.listCustomers();
+//     const customersList = await customerService.listCustomers();
 
-    for (const c of customersList) {
-      const existing = await ledgerService.getMonthlyLedger(
-        c.customerId,
-        monthKey,
-      );
+//     for (const c of customersList) {
+//       const existing = await ledgerService.getMonthlyLedger(
+//         c.customerId,
+//         monthKey,
+//       );
 
-      if (!existing) {
-        await generateMonthlyLedger(c.customerId, c.name, monthKey);
-      }
-    }
-  }
+//       if (!existing) {
+//         await generateMonthlyLedger(c.customerId, c.name, monthKey);
+//       }
+//     }
+//   }
 
-  autoGenerateIfNeeded();
-}, []);
+//   autoGenerateIfNeeded();
+// }, []);
   return (
     <div className="space-y-6">
       {/* HEADER */}
