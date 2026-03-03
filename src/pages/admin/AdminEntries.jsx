@@ -1,9 +1,10 @@
+/* eslint-disable react-hooks/immutability */
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useEffect, useMemo, useState } from "react";
 import FiltersBar from "../../components/admin/FiltersBar";
 import EntryTable from "../../components/admin/EntryTable";
-import { creditEntryService } from "../../services";
+import { creditEntryService, customerService } from "../../services";
 import { formatINR } from "../../lib/format";
 import { todayISO } from "../../lib/format";
 import Modal from "../../components/common/Modal";
@@ -16,6 +17,14 @@ export default function AdminEntries() {
   const [editEntry, setEditEntry] = useState(null);
   const [deleteEntry, setDeleteEntry] = useState(null);
 
+  const [openAdd, setOpenAdd] = useState(false);
+  const [allCustomers, setAllCustomers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [addAmount, setAddAmount] = useState("");
+  const [addDate, setAddDate] = useState(todayISO());
+
   const [editAmount, setEditAmount] = useState("");
 
   const [filters, setFilters] = useState({
@@ -24,6 +33,36 @@ export default function AdminEntries() {
     from: "",
     to: "",
   });
+
+  useEffect(() => {
+    load();
+
+    async function loadCustomers() {
+      const list = await customerService.listCustomers();
+      setAllCustomers(list);
+    }
+
+    loadCustomers();
+  }, []);
+
+  useEffect(() => {
+    if (!search.trim()) {
+      setFilteredCustomers([]);
+      return;
+    }
+
+    const term = search.toLowerCase();
+
+    const results = allCustomers.filter((c) => {
+      return (
+        c.name?.toLowerCase().includes(term) ||
+        c.phone?.includes(term) ||
+        c.customerId?.toLowerCase().includes(term)
+      );
+    });
+
+    setFilteredCustomers(results.slice(0, 8));
+  }, [search, allCustomers]);
   function handleEdit(entry) {
     setEditEntry(entry);
     setEditAmount(entry.amount);
@@ -106,12 +145,21 @@ export default function AdminEntries() {
   return (
     <div className="min-h-[calc(100vh-140px)] bg-black">
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <div>
+        {/* <div>
           <p className="text-xs font-semibold text-white/50">ADMIN</p>
           <h1 className="mt-1 text-2xl font-semibold text-white">Entries</h1>
           <p className="mt-1 text-sm text-white/60">
             Today entries by default. Filter by customer/month/date.
           </p>
+        </div> */}
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold text-white/50">ADMIN</p>
+            <h1 className="mt-1 text-2xl font-semibold text-white">Entries</h1>
+          </div>
+
+          <Button onClick={() => setOpenAdd(true)}>+ Add Entry</Button>
         </div>
 
         <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950 p-5">
@@ -188,6 +236,89 @@ export default function AdminEntries() {
               Delete
             </Button>
           </div>
+        </div>
+      </Modal>
+      <Modal
+        open={openAdd}
+        title="Add Customer Entry"
+        onClose={() => setOpenAdd(false)}
+      >
+        <div className="space-y-5">
+          {/* SEARCH */}
+          <div className="relative">
+            <label className="text-xs text-white/60">
+              Search Customer (Name / ID / Phone)
+            </label>
+
+            <input
+              className="w-full mt-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-white"
+              placeholder="Search customer..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setSelectedCustomer(null);
+              }}
+            />
+
+            {filteredCustomers.length > 0 && !selectedCustomer && (
+              <div className="absolute left-0 right-0 top-[70px] z-50 max-h-60 overflow-auto rounded-xl border border-white/10 bg-zinc-900">
+                {filteredCustomers.map((c) => (
+                  <div
+                    key={c.customerId}
+                    onClick={() => {
+                      setSelectedCustomer(c);
+                      setSearch(`${c.name} (${c.customerId})`);
+                      setFilteredCustomers([]);
+                    }}
+                    className="cursor-pointer border-b border-white/5 px-4 py-3 hover:bg-white/10"
+                  >
+                    <p className="text-sm font-semibold text-white">{c.name}</p>
+                    <p className="text-xs text-white/50">
+                      {c.customerId} • {c.phone}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* DATE PICKER */}
+          <Input
+            label="Entry Date"
+            type="date"
+            value={addDate}
+            onChange={(e) => setAddDate(e.target.value)}
+          />
+
+          {/* AMOUNT */}
+          <Input
+            label="Amount"
+            type="number"
+            value={addAmount}
+            onChange={(e) => setAddAmount(e.target.value)}
+          />
+
+          <Button
+            className="w-full"
+            disabled={!selectedCustomer || !addAmount}
+            onClick={async () => {
+              await creditEntryService.addCreditEntry({
+                customerId: selectedCustomer.customerId,
+                name: selectedCustomer.name,
+                amount: addAmount,
+                createdBy: "admin",
+                entryDateOverride: addDate,
+              });
+
+              setOpenAdd(false);
+              setAddAmount("");
+              setSearch("");
+              setSelectedCustomer(null);
+              load();
+            }}
+          >
+            Save Entry
+          </Button>
         </div>
       </Modal>
     </div>
